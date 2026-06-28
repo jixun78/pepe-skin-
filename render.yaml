@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: pepe-skin
+    env: python
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    plan: free
+    envVars:
+      - key: DEEPSEEK_KEY
+        sync: false
