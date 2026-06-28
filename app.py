@@ -149,7 +149,7 @@ def translate_to_feeling():
 - 温度：{w.get('temp_c','?')}°C，体感：{w.get('feels_like_c','?')}°C
 - 湿度：{w.get('humidity','?')}%
 - 风速：{w.get('wind_speed','?')}km/h，风向：{w.get('wind_dir','?')}
-- 天气：{w.get('weather_desc,'?')}，云量：{w.get('cloud_cover','?')}%
+- 天气：{w.get('weather_desc','?')}，云量：{w.get('cloud_cover','?')}%
 - 空气质量 PM2.5：{w.get('pm2_5','?')}，紫外线：{w.get('uv','?')}
 - 环境光：{s.get('light','?')} lux
 - 声音：{s.get('sound_db','?')} dB
