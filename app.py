@@ -65,6 +65,7 @@ def receive_sensor():
                 state["sensors"] = sensors
                 if "lat" in sensors:
                     update_city_from_gps(sensors["lat"], sensors["lng"])
+                    state["_raw_last"] = json.dumps(data)[:800]
         return jsonify({"ok": True}), 200
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 400
@@ -222,7 +223,10 @@ def get_status():
 def home():
     return "Pepe-Skin is alive 🍊", 200
 
-
+@app.route("/dump", methods=["GET","POST"])
+def dump():
+    return state.get("_raw_last","no data yet"), 200, {"Content-Type": "text/plain"}
+    
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", port=port)
