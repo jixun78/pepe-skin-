@@ -34,6 +34,7 @@ def dump():
 @app.route("/skin", methods=["POST"])
 def receive_sensor():
     try:
+        state["_raw_last"] = request.get_data(as_text=True)[:800]
         data = request.get_json(force=True)
         if isinstance(data, list) and len(data) > 0:
             latest = data[-1]
