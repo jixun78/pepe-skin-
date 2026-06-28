@@ -27,7 +27,7 @@ DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
 
 city = "Nanyang"
 
-@app.route("/dump", methods=["POST"])
+@app.route("/dump", methods=["GET","POST"])
 def dump():
     data = request.get_data(as_text=True)
     return jsonify({"raw": data[:500]}), 200
