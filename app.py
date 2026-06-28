@@ -30,7 +30,7 @@ city = "Nanyang"
 @app.route("/dump", methods=["GET","POST"])
 def dump():
     data = request.get_data(as_text=True)
-    return jsonify({"raw": data[:500]}), 200
+    return f"<pre>{data}</pre>", 200, {"Content-Type": "text/html"}
 @app.route("/skin", methods=["POST"])
 def receive_sensor():
     try:
