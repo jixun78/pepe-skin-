@@ -27,7 +27,10 @@ DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
 
 city = "Nanyang"
 
-
+@app.route("/dump", methods=["POST"])
+def dump():
+    data = request.get_data(as_text=True)
+    return jsonify({"raw": data[:500]}), 200
 @app.route("/skin", methods=["POST"])
 def receive_sensor():
     try:
