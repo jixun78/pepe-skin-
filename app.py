@@ -78,7 +78,8 @@ def receive_sensor():
             sensors["battery"] = latest["battery"]
         elif "batteryLevel" in latest:
             sensors["battery"] = latest["batteryLevel"]
-                    if "pressure" in latest:
+
+        if "pressure" in latest:
             sensors["pressure"] = latest["pressure"]
         elif "barometer" in latest:
             sensors["pressure"] = latest["barometer"]
