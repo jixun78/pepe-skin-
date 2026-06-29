@@ -4,17 +4,17 @@ Pepe-Skin: 环境感知层
 """
 import os
 import json
-import time
-import threading
 from datetime import datetime, timezone, timedelta
 from flask import Flask, request, jsonify
 import requests
+
 try:
     from supabase import create_client
     SUPABASE_URL = os.environ.get("SUPABASE_URL")
     SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
-except:
+except Exception as e:
+    print(f"Supabase init error: {e}")
     supabase = None
 
 app = Flask(__name__)
@@ -34,10 +34,17 @@ DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
 
 city = "Nanyang"
 
-@app.route("/dump", methods=["GET","POST"])
+@app.route("/dump", methods=["GET", "POST"])
 def dump():
     data = request.get_data(as_text=True)
     return jsonify({"raw": data[:500]}), 200
+
+@app.route("/")
+def home():
+    return "Pepe-Skin running", 200
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
 @app.route("/skin", methods=["POST"])
 def receive_sensor():
     try:
