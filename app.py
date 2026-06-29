@@ -67,6 +67,11 @@ def receive_sensor():
                 if "lat" in sensors:
                     update_city_from_gps(sensors["lat"], sensors["lng"])
                     state["_raw_last"] = json.dumps(data)[:800]
+                    if sensors:
+    try:
+        supabase.table("device_data").insert({"timestamp": datetime.now(TZ).isoformat(), "raw": state.get("_raw_last","")}).execute()
+    except:
+        pass
         return jsonify({"ok": True}), 200
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 400
