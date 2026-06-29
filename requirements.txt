@@ -1,4 +1,4 @@
 flask
 requests
-supabase-py
+supabase
 python-dotenv
