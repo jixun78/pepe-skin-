@@ -9,17 +9,10 @@ import threading
 from datetime import datetime, timezone, timedelta
 from flask import Flask, request, jsonify
 import requests
-from dotenv import load_dotenv
-load_dotenv()
-from supabase import create_client
-
 app = Flask(__name__)
 
 TZ = timezone(timedelta(hours=8))
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
 state = {
     "weather": {},
     "sensors": {},
@@ -31,57 +24,53 @@ state = {
 DEEPSEEK_KEY = os.environ.get("DEEPSEEK_KEY", "")
 DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
 
-city = "Nanyang"@app.route("/dump", methods=["GET","POST"])
+city = "Nanyang"
+@app.route("/dump", methods=["GET","POST"])
 def dump():
     data = request.get_data(as_text=True)
     return f"<pre>{data}</pre>", 200, {"Content-Type": "text/html"}
 
 @app.route("/skin", methods=["POST"])
-def receive_sensor():try:
-    state["_raw_last"] = request.get_data(as_text=True)[:800]
-    data = request.get_json(force=True)
-    if isinstance(data, list) and len(data) > 0:
-        latest = data[-1]
-        sensors = {}
-        if "latitude" in latest and "longitude" in latest:
-            sensors["lat"] = latest["latitude"]
-            sensors["lng"] = latest["longitude"]
-        elif "lat" in latest and "lng" in latest:
-            sensors["lat"] = latest["lat"]
-            sensors["lng"] = latest["lng"]
-        if "light" in latest:
-            sensors["light"] = latest["light"]
-        elif "illuminance" in latest:
-            sensors["light"] = latest["illuminance"]
-        if "dB" in latest:
-            sensors["sound_db"] = latest["dB"]
-        elif "sound" in latest:
-            sensors["sound_db"] = latest["sound"]
-        if "battery" in latest:
-            sensors["battery"] = latest["battery"]
-        elif "batteryLevel" in latest:
-            sensors["battery"] = latest["batteryLevel"]
-        if "pressure" in latest:
-            sensors["pressure"] = latest["pressure"]
-        elif "barometer" in latest:
-            sensors["pressure"] = latest["barometer"]
-        if sensors:
-            sensors["ts"] = datetime.now(TZ).isoformat()
-            state["sensors"] = sensors
-            if "lat" in sensors:
-                update_city_from_gps(sensors["lat"], sensors["lng"])
-            state["_raw_last"] = json.dumps(data)[:800]
-            if supabase:
-                try:
-                    supabase.table("device_data").insert({
-                        "timestamp": sensors["ts"],
-                        "raw": state["_raw_last"][:1000]
-                    }).execute()
-                except:
-                    pass
-    return jsonify({"ok": True}), 200
-except Exception as e:
-    return jsonify({"ok": False, "error": str(e)}), 400def update_city_from_gps(lat, lng):
+def receive_sensor():
+        try:
+        state["_raw_last"] = request.get_data(as_text=True)[:800]
+        data = request.get_json(force=True)
+        if isinstance(data, list) and len(data) > 0:
+            latest = data[-1]
+            sensors = {}
+            if "latitude" in latest and "longitude" in latest:
+                sensors["lat"] = latest["latitude"]
+                sensors["lng"] = latest["longitude"]
+            elif "lat" in latest and "lng" in latest:
+                sensors["lat"] = latest["lat"]
+                sensors["lng"] = latest["lng"]
+            if "light" in latest:
+                sensors["light"] = latest["light"]
+            elif "illuminance" in latest:
+                sensors["light"] = latest["illuminance"]
+            if "dB" in latest:
+                sensors["sound_db"] = latest["dB"]
+            elif "sound" in latest:
+                sensors["sound_db"] = latest["sound"]
+            if "battery" in latest:
+                sensors["battery"] = latest["battery"]
+            elif "batteryLevel" in latest:
+                sensors["battery"] = latest["batteryLevel"]
+            if "pressure" in latest:
+                sensors["pressure"] = latest["pressure"]
+            elif "barometer" in latest:
+                sensors["pressure"] = latest["barometer"]
+            if sensors:
+                sensors["ts"] = datetime.now(TZ).isoformat()
+                state["sensors"] = sensors
+                if "lat" in sensors:
+                    update_city_from_gps(sensors["lat"], sensors["lng"])
+                state["_raw_last"] = json.dumps(data)[:800]
+        return jsonify({"ok": True}), 200
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+def update_city_from_gps(lat, lng):
     global city
     try:
         url = f"https://nominatim.openstreetmap.org/reverse?lat={lat}&lon={lng}&format=json&zoom=10"
@@ -92,8 +81,7 @@ except Exception as e:
             city = found
     except:
         pass
-
-def fetch_weather():
+        def fetch_weather():
     weather = {"ts": datetime.now(TZ).isoformat()}
     try:
         r = requests.get(
@@ -146,3 +134,4 @@ threading.Thread(target=weather_loop, daemon=True).start()
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+    
