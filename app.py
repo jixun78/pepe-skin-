@@ -1,5 +1,5 @@
 """
-Pepe-Skin: 环境感知层
+Pepe-Skin: 环境感知层 v4
 """
 import os
 import json
@@ -12,8 +12,10 @@ try:
     SUPABASE_URL = os.environ.get("SUPABASE_URL")
     SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
-except:
+    print(f"[INIT] supabase = {supabase}")
+except Exception as e:
     supabase = None
+    print(f"[INIT] supabase init failed: {e}")
 
 app = Flask(__name__)
 TZ = timezone(timedelta(hours=8))
@@ -31,19 +33,25 @@ def dump():
 def receive_sensor():
     try:
         raw = request.get_data(as_text=True)
-        print(f"[SKIN] got {len(raw)} bytes: {raw[:300]}")
+        print(f"[SKIN] got {len(raw)} bytes: {raw[:200]}")
+        print(f"[SKIN] supabase is {supabase}")
         ts = datetime.now(TZ).isoformat()
         error = None
-        if supabase and raw:
+        if supabase is None:
+            error = "supabase not initialized"
+            print(f"[SKIN ERROR] {error}")
+        elif raw:
             try:
                 supabase.table("device_data").insert({"timestamp": ts, "raw": raw[:1000]}).execute()
-                print("[INSERT OK]")
+                print("[SKIN] INSERT OK")
             except Exception as e:
                 error = str(e)
-                print(f"[INSERT FAIL] {e}")
+                print(f"[SKIN INSERT FAIL] {e}")
+        else:
+            print("[SKIN] raw is empty, nothing to insert")
         return jsonify({"ok": True, "size": len(raw), "error": error}), 200
     except Exception as e:
-        print(f"[FATAL] {e}")
+        print(f"[SKIN FATAL] {e}")
         return jsonify({"ok": False, "error": str(e)}), 400
 
 if __name__ == "__main__":
