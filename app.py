@@ -1,5 +1,6 @@
 """
-Pepe-Skin: 环境感知层 v4
+Pepe-Skin: 环境感知层 v5
+使用 request.stream.read() 避免 Render 吞 body
 """
 import os
 import json
@@ -26,13 +27,14 @@ def home():
 
 @app.route("/dump", methods=["GET", "POST"])
 def dump():
-    data = request.get_data(as_text=True)
-    return jsonify({"raw": data[:500]}), 200
+    raw = request.stream.read()
+    return jsonify({"raw": raw.decode("utf-8", errors="replace")[:500]}), 200
 
 @app.route("/skin", methods=["POST"])
 def receive_sensor():
     try:
-        raw = request.get_data(as_text=True)
+        raw_bytes = request.stream.read()
+        raw = raw_bytes.decode("utf-8", errors="replace")
         print(f"[SKIN] got {len(raw)} bytes: {raw[:200]}")
         print(f"[SKIN] supabase is {supabase}")
         ts = datetime.now(TZ).isoformat()
@@ -48,7 +50,7 @@ def receive_sensor():
                 error = str(e)
                 print(f"[SKIN INSERT FAIL] {e}")
         else:
-            print("[SKIN] raw is empty, nothing to insert")
+            print("[SKIN] raw is empty")
         return jsonify({"ok": True, "size": len(raw), "error": error}), 200
     except Exception as e:
         print(f"[SKIN FATAL] {e}")
